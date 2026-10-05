@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ShopAI – Smart Shopping Assistant</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-brand">🛒 <span>ShopAI</span></div>
+  <div class="nav-right">
+    <button class="btn-ghost" onclick="showOrders()">My Orders</button>
+    <button class="btn-ghost" onclick="loadHistory()">History</button>
+    <button class="btn-primary" id="btn-login" onclick="showAuthModal()">Login</button>
+    <div class="user-info hidden" id="user-info">
+      <span id="user-name"></span>
+      <button class="btn-ghost" onclick="logout()">Logout</button>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN CONTAINER -->
+<div class="container">
+
+  <!-- SEARCH SECTION -->
+  <div class="search-section" id="search-section">
+    <h1>Find the best deals across all platforms</h1>
+    <p class="subtitle">AI searches Amazon, Flipkart &amp; Snapdeal — compares prices, reviews &amp; delivery</p>
+    <div class="search-box">
+      <input id="query-input" type="text"
+        placeholder="e.g. Samsung Galaxy S24 256GB cheapest price"
+        onkeydown="if(event.key==='Enter')startSearch()"/>
+      <button class="btn-search" id="btn-search" onclick="startSearch()">Search</button>
+    </div>
+    <div class="chips">
+      <span class="chip" onclick="fillQuery(this)">Cheapest Samsung Galaxy S24 256GB</span>
+      <span class="chip" onclick="fillQuery(this)">Laptop under ₹60,000 for coding</span>
+      <span class="chip" onclick="fillQuery(this)">Best 4K TV under ₹50,000</span>
+      <span class="chip" onclick="fillQuery(this)">iPhone 15 128GB lowest price</span>
+    </div>
+  </div>
+
+  <!-- AGENT TIMELINE -->
+  <div class="timeline-wrap hidden" id="timeline-wrap">
+    <div class="timeline" id="timeline"></div>
+    <div class="platform-row" id="platform-row"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results hidden" id="results">
+
+    <div class="results-header">
+      <div>
+        <h2 id="results-title"></h2>
+        <p id="results-subtitle"></p>
+      </div>
+      <div class="results-controls">
+        <select id="sort-select" onchange="applySort()">
+          <option value="rank">Best Match</option>
+          <option value="price_asc">Price ↑</option>
+          <option value="price_desc">Price ↓</option>
+          <option value="rating">Highest Rated</option>
+          <option value="total_cost">Lowest Total Cost</option>
+        </select>
+        <button class="btn-outline btn-sm" id="btn-grid"   onclick="setView('grid')"   >Grid</button>
+        <button class="btn-outline btn-sm" id="btn-list"   onclick="setView('list')"   >List</button>
+        <button class="btn-outline btn-sm" id="btn-compare" onclick="setView('compare')">Compare</button>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <input  id="filter-price"    type="number" placeholder="Max Price ₹"   oninput="applyFilters()"/>
+      <select id="filter-rating"   onchange="applyFilters()">
+        <option value="">Any Rating</option>
+        <option value="4.5">4.5+</option>
+        <option value="4.0">4.0+</option>
+        <option value="3.5">3.5+</option>
+      </select>
+      <select id="filter-platform" onchange="applyFilters()">
+        <option value="">All Platforms</option>
+        <option value="amazon">Amazon</option>
+        <option value="flipkart">Flipkart</option>
+        <option value="snapdeal">Snapdeal</option>
+      </select>
+      <button class="btn-ghost btn-sm" onclick="clearFilters()">Clear</button>
+    </div>
+
+    <!-- AI Recommendation banner -->
+    <div class="rec-banner hidden" id="rec-banner">
+      <span class="rec-icon">🤖</span>
+      <div>
+        <strong>AI Recommendation</strong>
+        <p id="rec-text"></p>
+      </div>
+    </div>
+
+    <!-- Cross-platform comparison groups -->
+    <div id="groups-section"></div>
+
+    <!-- Product grid / list / compare -->
+    <div class="product-grid" id="product-grid"></div>
+    <div class="compare-wrap hidden" id="compare-wrap">
+      <table class="compare-table" id="compare-table"></table>
+    </div>
+    <div class="empty hidden" id="empty-msg">
+      <p>No products match your filters. <button class="link-btn" onclick="clearFilters()">Clear filters</button></p>
+    </div>
+
+  </div><!-- /results -->
+
+  <!-- HISTORY PANEL -->
+  <div class="panel hidden" id="history-panel">
+    <div class="panel-header">
+      <h3>Search History</h3>
+      <button class="btn-ghost btn-sm" onclick="closePanel('history-panel')">✕ Close</button>
+    </div>
+    <div id="history-list"></div>
+  </div>
+
+  <!-- ORDERS PANEL -->
+  <div class="panel hidden" id="orders-panel">
+    <div class="panel-header">
+      <h3>My Orders</h3>
+      <button class="btn-ghost btn-sm" onclick="closePanel('orders-panel')">✕ Close</button>
+    </div>
+    <div id="orders-list"></div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ── MODALS ──────────────────────────────────────────────────────────────── -->
+
+<!-- Product Detail -->
+<div class="overlay hidden" id="product-modal" onclick="overlayClose(event,'product-modal')">
+  <div class="modal modal-lg">
+    <button class="modal-x" onclick="closeModal('product-modal')">✕</button>
+    <div id="product-modal-body"></div>
+  </div>
+</div>
+
+<!-- Purchase Approval (human-in-the-loop) -->
+<div class="overlay hidden" id="approval-modal" onclick="overlayClose(event,'approval-modal')">
+  <div class="modal modal-sm">
+    <button class="modal-x" onclick="closeModal('approval-modal')">✕</button>
+    <div id="approval-modal-body"></div>
+  </div>
+</div>
+
+<!-- Order Confirmation -->
+<div class="overlay hidden" id="order-modal" onclick="overlayClose(event,'order-modal')">
+  <div class="modal modal-sm">
+    <button class="modal-x" onclick="closeModal('order-modal')">✕</button>
+    <div id="order-modal-body"></div>
+  </div>
+</div>
+
+<!-- Auth -->
+<div class="overlay hidden" id="auth-modal" onclick="overlayClose(event,'auth-modal')">
+  <div class="modal modal-sm">
+    <button class="modal-x" onclick="closeModal('auth-modal')">✕</button>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Login</button>
+      <button class="auth-tab"        onclick="switchTab('register')">Register</button>
+    </div>
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <h3 style="margin-bottom:16px">Welcome back</h3>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" required placeholder="you@email.com"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" required placeholder="••••••"/>
+      </div>
+      <p class="form-err hidden" id="login-error"></p>
+      <button type="submit" class="btn-primary btn-full">Login</button>
+    </form>
+    <form id="register-form" class="hidden" onsubmit="handleRegister(event)">
+      <h3 style="margin-bottom:16px">Create account</h3>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="reg-username" required placeholder="yourname"/>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" required placeholder="you@email.com"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="reg-password" required placeholder="Min 6 chars"/>
+      </div>
+      <p class="form-err hidden" id="reg-error"></p>
+      <button type="submit" class="btn-primary btn-full">Create Account</button>
+    </form>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast hidden" id="toast"></div>
+
+<script src="js/api.js"></script>
+<script src="js/state.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/search.js"></script>
+<script src="js/purchase.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
