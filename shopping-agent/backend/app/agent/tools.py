@@ -76,6 +76,14 @@ def _rule_based_query_parser(query: str) -> dict:
         constraints["category"] = "laptop"
     elif "tv" in q:
         constraints["category"] = "tv"
+    elif any(k in q for k in ["perfume", "fragrance", "cologne", "attar", "scent", "deo", "deodorant"]):
+        constraints["category"] = "perfume"
+    elif any(k in q for k in ["watch", "smartwatch", "analog", "wristwatch"]):
+        constraints["category"] = "watch"
+    elif any(k in q for k in ["shoe", "sneaker", "sandal", "slipper", "boot"]):
+        constraints["category"] = "shoes"
+    elif any(k in q for k in ["shirt", "tshirt", "t-shirt", "kurta", "jeans", "pant", "trouser"]):
+        constraints["category"] = "clothing"
 
     return constraints
 
@@ -600,10 +608,22 @@ async def compare_and_filter_products(
     is_phone_query  = any(k in raw_target for k in ["phone", "mobile", "samsung", "iphone", "galaxy", "redmi", "realme", "oneplus", "vivo", "oppo", "s24", "s23"])
     is_laptop_query = any(k in raw_target for k in ["laptop", "macbook", "notebook"])
     is_tv_query     = any(k in raw_target for k in ["tv", "television"])
+    is_perfume_query = any(k in raw_target for k in ["perfume", "fragrance", "cologne", "deodorant", "deo", "eau de", "attar", "scent"])
+    is_watch_query  = any(k in raw_target for k in ["watch", "smartwatch", "analog", "digital watch", "wristwatch"])
+    is_shoe_query   = any(k in raw_target for k in ["shoe", "sneaker", "sandal", "slipper", "boot", "footwear"])
+    is_shirt_query  = any(k in raw_target for k in ["shirt", "tshirt", "t-shirt", "kurta", "top", "jeans", "trouser", "pant"])
 
     accessory_words = [
         "case", "cover", "back cover", "tempered glass", "screen guard", "protector",
         "pouch", "skin", "sticker", "stickers", "book", "guide", "toy", "kit", "mouse pad"
+    ]
+
+    # Non-perfume words that should be rejected for perfume queries
+    perfume_reject_words = [
+        "idol", "murti", "statue", "pendant", "locket", "necklace", "chain",
+        "dvd", "blu-ray", "movie", "film", "book", "poster", "frame", "wallet",
+        "keychain", "bracelet", "ring", "earring", "figurine", "showpiece",
+        "incense", "agarbatti", "candle", "diffuser", "puja", "pooja",
     ]
 
     filtered, rejected = [], 0
@@ -640,6 +660,35 @@ async def compare_and_filter_products(
             if any(acc in title_lower for acc in ["mount", "bracket", "remote", "cable", "cover"]) and not any(acc in raw_target for acc in ["mount", "remote"]):
                 rejected += 1; continue
             if price and price < 5000:
+                rejected += 1; continue
+
+        # Perfume query — reject idols, pendants, movies, books etc.
+        if is_perfume_query:
+            if any(w in title_lower for w in perfume_reject_words):
+                rejected += 1; continue
+            # Must contain at least one perfume-related word in title
+            perfume_title_words = ["perfume", "fragrance", "cologne", "eau de", "edp", "edt",
+                                   "deodorant", "deo", "attar", "scent", "spray", "body mist"]
+            if not any(w in title_lower for w in perfume_title_words):
+                rejected += 1; continue
+
+        # Watch query — reject watch straps, cases, covers
+        if is_watch_query:
+            watch_reject = ["strap", "band", "cover", "case", "charger", "cable",
+                           "screen guard", "protector", "book", "poster"]
+            if any(w in title_lower for w in watch_reject):
+                rejected += 1; continue
+
+        # Shoe query — reject shoe racks, polish, laces, cleaners
+        if is_shoe_query:
+            shoe_reject = ["rack", "polish", "cleaner", "lace", "insole", "organizer", "box"]
+            if any(w in title_lower for w in shoe_reject):
+                rejected += 1; continue
+
+        # Shirt query — reject hangers, covers, irons, detergent
+        if is_shirt_query:
+            shirt_reject = ["hanger", "iron", "detergent", "cover", "organizer", "bag"]
+            if any(w in title_lower for w in shirt_reject):
                 rejected += 1; continue
 
         # Strict Storage Variant Check (e.g. 128GB requested -> reject 64GB / 256GB)
@@ -688,8 +737,8 @@ async def compare_and_filter_products(
 
     shortlisted = []
     for i, p in enumerate(filtered):
-        p["is_shortlisted"] = i < 5
-        if i < 5:
+        p["is_shortlisted"] = i < 15
+        if i < 15:
             shortlisted.append(p)
 
     app_logger.info(

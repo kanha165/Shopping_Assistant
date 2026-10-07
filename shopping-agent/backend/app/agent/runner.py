@@ -160,9 +160,14 @@ def _build_result(state: ShoppingAgentState, session_id: str, elapsed: float) ->
 
     try:
         fd = json.loads(state.get("filtered_products") or "{}")
+        # filtered_products has ALL products that passed constraints (not just top 15)
         all_products = fd.get("filtered_products", [])
     except Exception:
         all_products = []
+
+    # If filtered_products is empty, fall back to shortlisted
+    if not all_products:
+        all_products = shortlisted
 
     try:
         constraints = json.loads(state.get("parsed_constraints") or "{}")
