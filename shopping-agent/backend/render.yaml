@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: shopping-agent-api
+    runtime: python
+    rootDir: shopping-agent/backend
+    buildCommand: pip install -r requirements.txt && playwright install chromium --with-deps
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: LLM_PROVIDER
+        value: google
+      - key: GOOGLE_API_KEY
+        sync: false          # set manually in Render dashboard
+      - key: GOOGLE_MODEL
+        value: gemini-2.5-flash
+      - key: RAPIDAPI_KEY
+        sync: false
+      - key: PLAYWRIGHT_HEADLESS
+        value: "True"
+      - key: MAX_PRODUCTS_PER_PLATFORM
+        value: "15"
