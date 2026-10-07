@@ -26,7 +26,7 @@ class AmazonScraper(BaseScraper):
             cards = soup.select('[data-component-type="s-search-result"]')
             app_logger.info(f"[Amazon] Found {len(cards)} cards")
 
-            for card in cards[:max_results * 2]:
+            for card in cards[:max_results * 3]:
                 try:
                     p = self._parse_card(card)
                     if not p:

@@ -33,7 +33,7 @@ class FlipkartScraper(BaseScraper):
             )
             app_logger.info(f"[Flipkart] Found {len(cards)} cards")
 
-            for card in cards[:max_results * 2]:
+            for card in cards[:max_results * 3]:
                 try:
                     p = self._parse_card(card)
                     if not p:
@@ -99,9 +99,23 @@ class FlipkartScraper(BaseScraper):
         )
         review_count = self.parse_review_count(review_el.get_text() if review_el else "")
 
-        # Image - actual class: UCc1lI or PZfbSE
-        img_el = card.select_one("img.UCc1lI") or card.select_one("img.PZfbSE") or card.select_one("img")
-        image_url = img_el.get("src", "") if img_el else ""
+        # Image — try multiple selectors + data-src for lazy loading
+        img_el = (
+            card.select_one("img.UCc1lI") or
+            card.select_one("img.PZfbSE") or
+            card.select_one("img._396cs4") or
+            card.select_one("img[src*='rukminim']") or   # Flipkart CDN URL pattern
+            card.select_one("img")
+        )
+        image_url = ""
+        if img_el:
+            image_url = (
+                img_el.get("src") or
+                img_el.get("data-src") or ""
+            )
+            # Skip tiny placeholder images
+            if image_url and ("placeholder" in image_url or "blank" in image_url or len(image_url) < 20):
+                image_url = ""
 
         # Discount
         disc_el = card.select_one("._3Ay6Sb span") or card.select_one(".UkUFwK span")

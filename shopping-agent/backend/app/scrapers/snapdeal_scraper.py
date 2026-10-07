@@ -25,7 +25,7 @@ class SnapdealScraper(BaseScraper):
             cards = soup.select(".product-tuple-listing") or soup.select(".product-tuple-description")
             app_logger.info(f"[Snapdeal] Found {len(cards)} cards")
 
-            for card in cards[:max_results * 2]:
+            for card in cards[:max_results * 3]:
                 try:
                     p = self._parse_card(card)
                     if not p:
@@ -78,8 +78,18 @@ class SnapdealScraper(BaseScraper):
             if pct:
                 rating = round(float(pct[0]) / 20, 1)
 
-        img_el = card.select_one("img.product-image") or card.select_one("img.main-img-class")
-        image_url = img_el.get("src", "") if img_el else ""
+        img_el = card.select_one("img.product-image") or card.select_one("img.main-img-class") or card.select_one("img")
+        # Snapdeal uses lazy-loading — check data-src first, fallback to src
+        image_url = ""
+        if img_el:
+            image_url = (
+                img_el.get("data-src") or
+                img_el.get("data-lazy") or
+                img_el.get("src") or ""
+            )
+            # Skip placeholder/blank 1px tracking images
+            if image_url and ("placeholder" in image_url or image_url.endswith("blank.gif") or "1x1" in image_url):
+                image_url = ""
 
         return {
             "product_name": name,
