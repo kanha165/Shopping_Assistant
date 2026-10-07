@@ -11,38 +11,18 @@ langgraph>=0.1.0
 langchain-openai>=0.1.0
 langchain-google-genai>=2.0.0
 
-# Database - MySQL
-sqlalchemy>=2.0.0
-aiomysql>=0.2.0
-alembic>=1.13.0
-PyMySQL>=1.1.0
-cryptography>=42.0.0
-
-# Pydantic & Validation
+# Pydantic & Settings
 pydantic>=2.7.0
 pydantic-settings>=2.3.0
 
 # Browser Automation
 playwright>=1.44.0
 
-# HTTP Requests & Parsing
+# HTTP Requests & HTML Parsing
 httpx>=0.27.0
-aiohttp>=3.9.0
 beautifulsoup4>=4.12.0
 lxml>=5.2.0
-fake-useragent>=1.5.0
-
-# Redis
-redis>=5.0.0
-aioredis>=2.0.0
 
 # Utilities
 python-dotenv>=1.0.0
-python-jose[cryptography]>=3.3.0
-passlib[bcrypt]>=1.7.4
-tenacity>=8.3.0
 loguru>=0.7.0
-
-# Testing
-pytest>=8.0.0
-pytest-asyncio>=0.23.0
