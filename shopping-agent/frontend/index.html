@@ -3,138 +3,311 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ShopAI – Smart Shopping Assistant</title>
+  <title>ShopAI – Smart AI Shopping Assistant</title>
+  <meta name="description" content="AI-Powered Smart Shopping Assistant comparing real-time prices across Amazon, Flipkart, and Snapdeal using LangGraph and Gemini AI."/>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js CDN for Analytics Insights -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Stylesheets -->
   <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/components.css"/>
 </head>
 <body>
 
-<!-- NAVBAR -->
-<nav class="navbar">
-  <div class="nav-brand">🛒 <span>ShopAI</span></div>
-  <div class="nav-right">
-    <button class="btn-ghost" onclick="showOrders()">My Orders</button>
-    <button class="btn-ghost" onclick="loadHistory()">History</button>
-    <button class="btn-primary" id="btn-login" onclick="showAuthModal()">Login</button>
-    <div class="user-info hidden" id="user-info">
-      <span id="user-name"></span>
-      <button class="btn-ghost" onclick="logout()">Logout</button>
-    </div>
-  </div>
-</nav>
+<!-- ── LAYOUT WRAPPER ─────────────────────────────────────────────────── -->
+<div class="app-layout">
 
-<!-- MAIN CONTAINER -->
-<div class="container">
-
-  <!-- SEARCH SECTION -->
-  <div class="search-section" id="search-section">
-    <h1>Find the best deals across all platforms</h1>
-    <p class="subtitle">AI searches Amazon, Flipkart &amp; Snapdeal — compares prices, reviews &amp; delivery</p>
-    <div class="search-box">
-      <input id="query-input" type="text"
-        placeholder="e.g. Samsung Galaxy S24 256GB cheapest price"
-        onkeydown="if(event.key==='Enter')startSearch()"/>
-      <button class="btn-search" id="btn-search" onclick="startSearch()">Search</button>
-    </div>
-    <div class="chips">
-      <span class="chip" onclick="fillQuery(this)">Cheapest Samsung Galaxy S24 256GB</span>
-      <span class="chip" onclick="fillQuery(this)">Laptop under ₹60,000 for coding</span>
-      <span class="chip" onclick="fillQuery(this)">Best 4K TV under ₹50,000</span>
-      <span class="chip" onclick="fillQuery(this)">iPhone 15 128GB lowest price</span>
-    </div>
-  </div>
-
-  <!-- AGENT TIMELINE -->
-  <div class="timeline-wrap hidden" id="timeline-wrap">
-    <div class="timeline" id="timeline"></div>
-    <div class="platform-row" id="platform-row"></div>
-  </div>
-
-  <!-- RESULTS -->
-  <div class="results hidden" id="results">
-
-    <div class="results-header">
+  <!-- ── SIDEBAR ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand-icon">🛒</div>
       <div>
-        <h2 id="results-title"></h2>
-        <p id="results-subtitle"></p>
-      </div>
-      <div class="results-controls">
-        <select id="sort-select" onchange="applySort()">
-          <option value="rank">Best Match</option>
-          <option value="price_asc">Price ↑</option>
-          <option value="price_desc">Price ↓</option>
-          <option value="rating">Highest Rated</option>
-          <option value="total_cost">Lowest Total Cost</option>
-        </select>
-        <button class="btn-outline btn-sm" id="btn-grid"   onclick="setView('grid')"   >Grid</button>
-        <button class="btn-outline btn-sm" id="btn-list"   onclick="setView('list')"   >List</button>
-        <button class="btn-outline btn-sm" id="btn-compare" onclick="setView('compare')">Compare</button>
+        <div class="sidebar-brand">ShopAI</div>
+        <div class="sidebar-tagline-sub">Smart Shopping Agent</div>
       </div>
     </div>
 
-    <!-- Filters -->
-    <div class="filters">
-      <input  id="filter-price"    type="number" placeholder="Max Price ₹"   oninput="applyFilters()"/>
-      <select id="filter-rating"   onchange="applyFilters()">
-        <option value="">Any Rating</option>
-        <option value="4.5">4.5+</option>
-        <option value="4.0">4.0+</option>
-        <option value="3.5">3.5+</option>
-      </select>
-      <select id="filter-platform" onchange="applyFilters()">
-        <option value="">All Platforms</option>
-        <option value="amazon">Amazon</option>
-        <option value="flipkart">Flipkart</option>
-        <option value="snapdeal">Snapdeal</option>
-      </select>
-      <button class="btn-ghost btn-sm" onclick="clearFilters()">Clear</button>
+    <div class="sidebar-info-box">
+      <p>AI-powered assistant comparing prices across <strong>Amazon, Flipkart &amp; Snapdeal</strong> in real-time.</p>
+      <div class="sidebar-model">🤖 Model: LangGraph + Gemini AI</div>
     </div>
 
-    <!-- AI Recommendation banner -->
-    <div class="rec-banner hidden" id="rec-banner">
-      <span class="rec-icon">🤖</span>
-      <div>
-        <strong>AI Recommendation</strong>
-        <p id="rec-text"></p>
+    <div class="sidebar-divider"></div>
+
+    <!-- Navigation Menu -->
+    <nav class="sidebar-nav">
+      <button class="nav-item active" id="nav-home" onclick="showPage('home')">
+        <span class="nav-icon">🏠</span> <span>Home</span>
+      </button>
+      <button class="nav-item" id="nav-search" onclick="showPage('search')">
+        <span class="nav-icon">🔍</span> <span>Search Products</span>
+      </button>
+      <button class="nav-item" id="nav-insights" onclick="showPage('insights')">
+        <span class="nav-icon">📊</span> <span>Insights &amp; Trends</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-divider"></div>
+
+    <!-- Developer Section -->
+    <div class="sidebar-dev">
+      <div class="dev-label">Developer</div>
+      <div class="dev-name">Kanha Patidar</div>
+      <div class="dev-socials">
+        <a href="https://github.com/kanha165" target="_blank" rel="noopener" class="social-btn" title="GitHub">
+          <img src="https://cdn-icons-png.flaticon.com/512/733/733553.png" alt="GitHub" width="20">
+        </a>
+        <a href="https://www.linkedin.com/in/kanha-patidar-17281a434" target="_blank" rel="noopener" class="social-btn" title="LinkedIn">
+          <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn" width="20">
+        </a>
+        <a href="mailto:kanhapatidar7251@gmail.com" class="social-btn" title="Email">
+          <img src="https://cdn-icons-png.flaticon.com/512/732/732200.png" alt="Email" width="20">
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN CONTENT ──────────────────────────────────────────────────── -->
+  <main class="main-content">
+
+    <!-- ── HEADER ──────────────────────────────────────────────────────── -->
+    <div class="header-box">
+      <div class="header-inner">
+        <div class="main-title">🛒 AI Shopping Assistant</div>
+        <div class="main-subtitle">Compare prices across Amazon, Flipkart &amp; Snapdeal in real-time — powered by LangGraph &amp; Gemini AI</div>
+        
+        <div class="header-status-pills">
+          <span class="status-pill platform-amazon">
+            <span class="status-dot"></span> Amazon: Live
+          </span>
+          <span class="status-pill platform-flipkart">
+            <span class="status-dot"></span> Flipkart: Live
+          </span>
+          <span class="status-pill platform-snapdeal">
+            <span class="status-dot"></span> Snapdeal: Live
+          </span>
+        </div>
       </div>
     </div>
 
-    <!-- Cross-platform comparison groups -->
-    <div id="groups-section"></div>
+    <!-- ══ PAGE 1: HOME ════════════════════════════════════════════════════ -->
+    <div id="page-home" class="page active-page">
+      
+      <div class="home-hero-banner">
+        <div class="hero-text">
+          <span class="hero-badge">⚡ Real-Time Cross-Platform Scraping</span>
+          <h2>Never Overpay Online Again.</h2>
+          <p>Tell our AI what you want in plain English. ShopAI simultaneously searches 3 major platforms, calculates shipping costs, analyzes customer reviews, and finds the single best deal.</p>
+        </div>
+        <div class="hero-graphic">
+          <div class="floating-deal-card amazon-deal">
+            <span class="store-tag">Amazon</span>
+            <span class="price-val">₹54,999</span>
+          </div>
+          <div class="floating-deal-card flipkart-deal">
+            <span class="store-tag">Flipkart</span>
+            <span class="price-val">₹52,490</span>
+            <span class="winner-badge">Lowest Price</span>
+          </div>
+          <div class="floating-deal-card snapdeal-deal">
+            <span class="store-tag">Snapdeal</span>
+            <span class="price-val">₹56,200</span>
+          </div>
+        </div>
+      </div>
 
-    <!-- Product grid / list / compare -->
-    <div class="product-grid" id="product-grid"></div>
-    <div class="compare-wrap hidden" id="compare-wrap">
-      <table class="compare-table" id="compare-table"></table>
+      <div class="home-grid">
+        <div class="info-card">
+          <div class="info-card-icon">🤖</div>
+          <h3>AI Natural Language Search</h3>
+          <p>Type any query like <em>"cheapest 55-inch 4K TV under 40k with 4+ rating"</em> — Gemini AI understands specs, brands &amp; budgets.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card-icon">💰</div>
+          <h3>True Total Cost</h3>
+          <p>Compares total payable cost including hidden delivery and shipping charges across Amazon, Flipkart, and Snapdeal.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card-icon">⭐</div>
+          <h3>AI Review Sentiment</h3>
+          <p>Reads thousands of verified buyer reviews to extract authentic pros, cons, and confidence ratings.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card-icon">🏆</div>
+          <h3>Smart Recommendation</h3>
+          <p>Identifies the single best overall value product backed by an explanation generated by Gemini AI.</p>
+        </div>
+      </div>
+
+      <div class="home-cta">
+        <h2>Ready to find the best deals?</h2>
+        <p>Type your query below and let AI do the shopping research for you.</p>
+        
+        <div class="search-box-home">
+          <input id="query-input-home" type="text"
+            placeholder="e.g. Samsung Galaxy S24 256GB cheapest price"
+            onkeydown="if(event.key==='Enter'){syncQuery();startSearch();showPage('search')}"/>
+          <button onclick="syncQuery();startSearch();showPage('search')">Search Deals →</button>
+        </div>
+        
+        <div class="chips">
+          <span class="chip-label">Quick Prompts:</span>
+          <span class="chip" onclick="quickSearch('Cheapest Samsung Galaxy S24 256GB')">📱 Samsung S24 256GB</span>
+          <span class="chip" onclick="quickSearch('Laptop under ₹60,000 for coding')">💻 Coding Laptop under 60k</span>
+          <span class="chip" onclick="quickSearch('Best 4K Smart TV under ₹50,000')">📺 4K TV under 50k</span>
+          <span class="chip" onclick="quickSearch('iPhone 15 128GB lowest price')">🍎 iPhone 15 128GB</span>
+          <span class="chip" onclick="quickSearch('Beardo Godfather perfume under 300')">🧴 Beardo Perfume</span>
+          <span class="chip" onclick="quickSearch('Wireless Earbuds under 2000 with ANC')">🎧 ANC Earbuds under 2k</span>
+        </div>
+      </div>
     </div>
-    <div class="empty hidden" id="empty-msg">
-      <p>No products match your filters. <button class="link-btn" onclick="clearFilters()">Clear filters</button></p>
+
+    <!-- ══ PAGE 2: SEARCH ══════════════════════════════════════════════════ -->
+    <div id="page-search" class="page">
+
+      <!-- Search Box Card -->
+      <div class="search-card">
+        <h3>🔍 Search Products Across Platforms</h3>
+        <div class="search-box">
+          <input id="query-input" type="text"
+            placeholder="e.g. Beardo perfume under ₹300 with 4+ rating"
+            onkeydown="if(event.key==='Enter')startSearch()"/>
+          <button class="btn-search" id="btn-search" onclick="startSearch()">Search</button>
+        </div>
+      </div>
+
+      <!-- Agent Timeline & Status -->
+      <div class="timeline-wrap hidden" id="timeline-wrap">
+        <div class="tl-title">🤖 AI Agent Working in Parallel...</div>
+        <div class="timeline" id="timeline"></div>
+        <div class="platform-row" id="platform-row"></div>
+      </div>
+
+      <!-- Results Section -->
+      <div class="results hidden" id="results">
+
+        <!-- AI Recommendation Banner -->
+        <div class="rec-banner hidden" id="rec-banner">
+          <span class="rec-icon">🏆</span>
+          <div>
+            <strong>AI Best Recommendation</strong>
+            <p id="rec-text"></p>
+          </div>
+        </div>
+
+        <!-- Results Header + Controls -->
+        <div class="results-header">
+          <div>
+            <h2 id="results-title">Search Results</h2>
+            <p id="results-subtitle"></p>
+          </div>
+          <div class="results-controls">
+            <select id="sort-select" onchange="applySort()">
+              <option value="rank">Best Match</option>
+              <option value="price_asc">Price: Low to High ↑</option>
+              <option value="price_desc">Price: High to Low ↓</option>
+              <option value="rating">Highest Rated ★</option>
+              <option value="total_cost">Lowest Total Cost</option>
+            </select>
+            <div class="view-btns">
+              <button id="btn-grid" onclick="setView('grid')" class="active-view" title="Grid View">⊞ Grid</button>
+              <button id="btn-list" onclick="setView('list')" title="List View">☰ List</button>
+              <button id="btn-compare" onclick="setView('compare')" title="Compare Table">⇄ Compare</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filters">
+          <div class="filter-group">
+            <label>Max Price (₹):</label>
+            <input id="filter-price" type="number" placeholder="e.g. 50000" oninput="applyFilters()"/>
+          </div>
+          <div class="filter-group">
+            <label>Minimum Rating:</label>
+            <select id="filter-rating" onchange="applyFilters()">
+              <option value="">Any Rating</option>
+              <option value="4.5">4.5+ ★</option>
+              <option value="4.0">4.0+ ★</option>
+              <option value="3.5">3.5+ ★</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Platform:</label>
+            <select id="filter-platform" onchange="applyFilters()">
+              <option value="">All Platforms</option>
+              <option value="amazon">Amazon</option>
+              <option value="flipkart">Flipkart</option>
+              <option value="snapdeal">Snapdeal</option>
+            </select>
+          </div>
+          <button class="btn-clear-filters" onclick="clearFilters()">Clear Filters</button>
+        </div>
+
+        <!-- Cross-platform matched groups -->
+        <div id="groups-section"></div>
+
+        <!-- Product grid & compare view -->
+        <div class="product-grid" id="product-grid"></div>
+        <div class="compare-wrap hidden" id="compare-wrap">
+          <table class="compare-table" id="compare-table"></table>
+        </div>
+        
+        <div class="empty hidden" id="empty-msg">
+          <p>No products match your filters. <button class="link-btn" onclick="clearFilters()">Clear filters</button></p>
+        </div>
+
+      </div><!-- /results -->
     </div>
 
-  </div><!-- /results -->
+    <!-- ══ PAGE 3: INSIGHTS & ANALYTICS ═══════════════════════════════════ -->
+    <div id="page-insights" class="page">
+      <div class="page-title-box">
+        <h2>📊 E-Commerce Price Analytics &amp; Insights</h2>
+        <p>Real-time cross-platform price index, discount distribution, and platform reliability benchmarks.</p>
+      </div>
 
-  <!-- HISTORY PANEL -->
-  <div class="panel hidden" id="history-panel">
-    <div class="panel-header">
-      <h3>Search History</h3>
-      <button class="btn-ghost btn-sm" onclick="closePanel('history-panel')">✕ Close</button>
-    </div>
-    <div id="history-list"></div>
-  </div>
+      <div class="insights-grid">
+        <div class="chart-card">
+          <h3>💰 Platform Average Price Comparison</h3>
+          <div class="chart-container">
+            <canvas id="priceComparisonChart"></canvas>
+          </div>
+        </div>
 
-  <!-- ORDERS PANEL -->
-  <div class="panel hidden" id="orders-panel">
-    <div class="panel-header">
-      <h3>My Orders</h3>
-      <button class="btn-ghost btn-sm" onclick="closePanel('orders-panel')">✕ Close</button>
-    </div>
-    <div id="orders-list"></div>
-  </div>
+        <div class="chart-card">
+          <h3>⭐ Customer Rating Distribution</h3>
+          <div class="chart-container">
+            <canvas id="ratingDistChart"></canvas>
+          </div>
+        </div>
 
-</div><!-- /container -->
+        <div class="chart-card">
+          <h3>🏷️ Average Discount Percentage (%)</h3>
+          <div class="chart-container">
+            <canvas id="discountChart"></canvas>
+          </div>
+        </div>
 
-<!-- ── MODALS ──────────────────────────────────────────────────────────────── -->
+        <div class="chart-card">
+          <h3>🚚 Average Shipping &amp; Delivery Days</h3>
+          <div class="chart-container">
+            <canvas id="deliveryTimeChart"></canvas>
+          </div>
+        </div>
+      </div><!-- /insights-grid -->
+    </div><!-- /page-insights -->
 
-<!-- Product Detail -->
+  </main>
+</div><!-- /app-layout -->
+
+<!-- ── MODALS ─────────────────────────────────────────────────────────── -->
 <div class="overlay hidden" id="product-modal" onclick="overlayClose(event,'product-modal')">
   <div class="modal modal-lg">
     <button class="modal-x" onclick="closeModal('product-modal')">✕</button>
@@ -142,7 +315,6 @@
   </div>
 </div>
 
-<!-- Purchase Approval (human-in-the-loop) -->
 <div class="overlay hidden" id="approval-modal" onclick="overlayClose(event,'approval-modal')">
   <div class="modal modal-sm">
     <button class="modal-x" onclick="closeModal('approval-modal')">✕</button>
@@ -150,64 +322,15 @@
   </div>
 </div>
 
-<!-- Order Confirmation -->
-<div class="overlay hidden" id="order-modal" onclick="overlayClose(event,'order-modal')">
-  <div class="modal modal-sm">
-    <button class="modal-x" onclick="closeModal('order-modal')">✕</button>
-    <div id="order-modal-body"></div>
-  </div>
-</div>
-
-<!-- Auth -->
-<div class="overlay hidden" id="auth-modal" onclick="overlayClose(event,'auth-modal')">
-  <div class="modal modal-sm">
-    <button class="modal-x" onclick="closeModal('auth-modal')">✕</button>
-    <div class="auth-tabs">
-      <button class="auth-tab active" onclick="switchTab('login')">Login</button>
-      <button class="auth-tab"        onclick="switchTab('register')">Register</button>
-    </div>
-    <form id="login-form" onsubmit="handleLogin(event)">
-      <h3 style="margin-bottom:16px">Welcome back</h3>
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="login-email" required placeholder="you@email.com"/>
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="login-password" required placeholder="••••••"/>
-      </div>
-      <p class="form-err hidden" id="login-error"></p>
-      <button type="submit" class="btn-primary btn-full">Login</button>
-    </form>
-    <form id="register-form" class="hidden" onsubmit="handleRegister(event)">
-      <h3 style="margin-bottom:16px">Create account</h3>
-      <div class="form-group">
-        <label>Username</label>
-        <input type="text" id="reg-username" required placeholder="yourname"/>
-      </div>
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="reg-email" required placeholder="you@email.com"/>
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="reg-password" required placeholder="Min 6 chars"/>
-      </div>
-      <p class="form-err hidden" id="reg-error"></p>
-      <button type="submit" class="btn-primary btn-full">Create Account</button>
-    </form>
-  </div>
-</div>
-
-<!-- Toast -->
 <div class="toast hidden" id="toast"></div>
 
-<script src="js/api.js"></script>
+<!-- Scripts -->
 <script src="js/state.js"></script>
+<script src="js/api.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/search.js"></script>
 <script src="js/purchase.js"></script>
-<script src="js/auth.js"></script>
 <script src="js/app.js"></script>
+
 </body>
 </html>
