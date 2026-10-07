@@ -206,9 +206,10 @@ function buildCard(p, i) {
       </div>
       ${isCheap && !isTop && !isUnavailable ? `<div class="cheapest-price-tag">💰 Lowest Total Price</div>` : ''}
       <div class="pcard-img">
-        ${p.image_url
+        ${p.image_url && p.image_url.startsWith('http')
           ? `<img src="${esc(p.image_url)}" alt="${esc(p.product_name)}"
-               onerror="this.parentElement.innerHTML='<div class=no-img>🛍️</div>'" loading="lazy"/>`
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"/>
+             <div class="no-img" style="display:none">🛍️</div>`
           : `<div class="no-img">🛍️</div>`}
       </div>
       <div class="pcard-body" onclick="openDetail('${enc}')">
@@ -242,9 +243,9 @@ function openDetail(enc) {
   document.getElementById('product-modal-body').innerHTML = `
     <div class="detail-layout">
       <div>
-        ${p.image_url
+        ${p.image_url && p.image_url.startsWith('http')
           ? `<img class="detail-img" src="${esc(p.image_url)}" alt="${esc(p.product_name)}"
-               onerror="this.src=''"/>`
+               onerror="this.src='';this.style.display='none'"/>`
           : `<div class="detail-img" style="display:flex;align-items:center;justify-content:center;font-size:5rem">🛍️</div>`}
       </div>
       <div class="detail-info">
@@ -417,77 +418,6 @@ function setView(v) {
     compare.classList.add('hidden');
   }
 }
-
-// ── History & Orders ─────────────────────────────────────────────────────────
-function renderHistory(items) {
-  const el = document.getElementById('history-list');
-  if (!items || items.length === 0) {
-    el.innerHTML = `
-      <div class="empty-panel">
-        <div style="font-size:2rem;margin-bottom:6px">🔍</div>
-        <p style="color:#666;font-size:.9rem;font-weight:500">No search history yet</p>
-        <p style="color:#999;font-size:.78rem;margin-top:2px">Your past product searches will be saved here.</p>
-      </div>`;
-    document.getElementById('history-panel').classList.remove('hidden');
-    return;
-  }
-
-  el.innerHTML = items.map(s => `
-    <div class="history-card" onclick="rerunSearch('${esc(s.raw_query)}')">
-      <div class="hc-info">
-        <div class="hi-query">🔍 "${esc(s.raw_query)}"</div>
-        <div class="hi-meta">
-          <span>📅 ${new Date(s.created_at).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'})}</span>
-          ${(s.platforms_searched||[]).length ? `<span>• ${s.platforms_searched.map(cap).join(', ')}</span>` : ''}
-        </div>
-      </div>
-      <button class="btn-outline btn-sm" onclick="event.stopPropagation();rerunSearch('${esc(s.raw_query)}')">
-        🔄 Re-run
-      </button>
-    </div>`).join('');
-  document.getElementById('history-panel').classList.remove('hidden');
-}
-
-function renderOrders(orders) {
-  const el = document.getElementById('orders-list');
-  if (!orders || orders.length === 0) {
-    el.innerHTML = `
-      <div class="empty-panel">
-        <div style="font-size:2rem;margin-bottom:6px">📦</div>
-        <p style="color:#666;font-size:.9rem;font-weight:500">No orders placed yet</p>
-        <p style="color:#999;font-size:.78rem;margin-top:2px">Confirmed purchases and cart handoffs will appear here.</p>
-      </div>`;
-    document.getElementById('orders-panel').classList.remove('hidden');
-    return;
-  }
-
-  el.innerHTML = orders.map(o => `
-    <div class="order-card">
-      <div class="oc-top">
-        <span class="platform-badge pb-${esc(o.platform)}">${esc(o.platform)}</span>
-        <span class="oi-status ${statusCss(o.status)}">${esc(o.status.replace(/_/g,' '))}</span>
-      </div>
-      <div class="oi-name">${esc(o.product_name)}</div>
-      <div class="oc-bottom">
-        <span class="oc-price">${fmtPrice(o.total_amount)}</span>
-        <span class="oc-date">📅 ${new Date(o.created_at).toLocaleDateString('en-IN', {day:'numeric', month:'short'})}</span>
-        ${o.cart_url || o.marketplace_url ? `
-          <a class="btn-primary btn-sm" href="${esc(o.cart_url || o.marketplace_url)}" target="_blank" rel="noopener" style="text-decoration:none">
-            Open Deal →
-          </a>` : ''}
-      </div>
-    </div>`).join('');
-  document.getElementById('orders-panel').classList.remove('hidden');
-}
-
-function statusCss(s) {
-  if (s.includes('confirmed')) return 'st-confirmed';
-  if (s.includes('cancel'))    return 'st-cancelled';
-  if (s.includes('progress'))  return 'st-progress';
-  return 'st-pending';
-}
-
-function closePanel(id) { document.getElementById(id).classList.add('hidden'); }
 
 // ── Modal helpers ────────────────────────────────────────────────────────────
 function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
