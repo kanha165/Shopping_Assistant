@@ -38,13 +38,5 @@ Thumbs.db
 playwright/.auth/
 test-results/
 
-# Node (if added later)
-node_modules/
-npm-debug.log
-
 # Pytest cache
 .pytest_cache/
-
-# Alembic generated versions (auto-generated, not committed)
-migrations/versions/*.py
-!migrations/versions/.gitkeep
